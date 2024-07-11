@@ -1,0 +1,13 @@
+Run the program with:
+
+go run *.go
+
+It takes a few minutes, and then prints out a number like 93/100. The question
+why is that so high? You might expect 50/100.
+
+It's looking at whether the similarity between two random streams drops in the
+regions where *either* of the streams matches some arbitary key from a set of
+random keys, compared to if only one of them does.
+
+For some reason the similarity is fairly consistently lower if you match on
+either stream rather than just one of them.
