@@ -30,6 +30,17 @@ func compare(a, b []int) int {
 	return same
 }
 
+type Buffer []int
+
+func (b Buffer) Push(value int) {
+	copy(b[1:], b[:len(b)-1])
+	b[0] = value
+}
+
+func (b Buffer) IsEqual(other []int) bool {
+	return reflect.DeepEqual([]int(b), other)
+}
+
 /*
 Make two random streams (the 'A' stream and the 'B' stream) with a given
 similarity and then look at what the similarity is in the regions where one or
@@ -49,8 +60,8 @@ func CompareInRegions(streamLen int, similarity float64, either bool) float64 {
 
 	// Keep the last keyLen outputs from each stream around so that we can
 	// check if they match the keys.
-	aBuf := make([]int, keyLen)
-	bBuf := make([]int, keyLen)
+	aBuf := make(Buffer, keyLen)
+	bBuf := make(Buffer, keyLen)
 
 	for i := 0; i < streamLen; i++ {
 		// Generate the next character of the two streams.
@@ -67,16 +78,21 @@ func CompareInRegions(streamLen int, similarity float64, either bool) float64 {
 			}
 		}
 
-		aBuf[i%keyLen] = a
-		bBuf[i%keyLen] = b
+		aBuf.Push(a)
+		bBuf.Push(b)
+
+		// Don't test anything until the buffers are full
+		if i < keyLen {
+			continue
+		}
 
 		// Is this part of the stream inside one of the regions defined by the
 		// keys?
 		insideRegions := false
 		for _, key := range keys {
-			insideRegions = reflect.DeepEqual(aBuf, key)
+			insideRegions = aBuf.IsEqual(key)
 			if either {
-				insideRegions = insideRegions || reflect.DeepEqual(bBuf, key)
+				insideRegions = insideRegions || bBuf.IsEqual(key)
 			}
 			if insideRegions {
 				break
