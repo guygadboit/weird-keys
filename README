@@ -11,3 +11,6 @@ random keys, compared to if only one of them does.
 
 For some reason the similarity is fairly consistently lower if you match on
 either stream rather than just one of them.
+
+Solution: if looking at average similarity you need to double-count the cases
+where both A and B match the key. h/t @dr_handler

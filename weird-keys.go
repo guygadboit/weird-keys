@@ -89,11 +89,19 @@ func CompareInRegions(streamLen int, similarity float64, either bool) float64 {
 		// Is this part of the stream inside one of the regions defined by the
 		// keys?
 		insideRegions := false
+		bothMatch := false
+
 		for _, key := range keys {
-			insideRegions = aBuf.IsEqual(key)
+			aMatch := aBuf.IsEqual(key)
+			bMatch := bBuf.IsEqual(key)
+
 			if either {
-				insideRegions = insideRegions || bBuf.IsEqual(key)
+				insideRegions = aMatch || bMatch
+				bothMatch = aMatch && bMatch
+			} else {
+				insideRegions = aMatch
 			}
+
 			if insideRegions {
 				break
 			}
@@ -103,6 +111,13 @@ func CompareInRegions(streamLen int, similarity float64, either bool) float64 {
 			same := compare(aBuf, bBuf)
 			totalSame += same
 			total += len(aBuf)
+
+			// This is the fix (thanks to @dr_handler). Count twice when both
+			// match!
+			if bothMatch {
+				totalSame += same
+				total += len(aBuf)
+			}
 		}
 	}
 
