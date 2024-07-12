@@ -14,3 +14,38 @@ either stream rather than just one of them.
 
 Solution: if looking at average similarity you need to double-count the cases
 where both A and B match the key. h/t @dr_handler
+
+Explanation:
+
+The mean similarity between A and B in the regions where A matches the key is
+the same as the overall mean similarity between A and B-- the key is random so
+these regions should be nothing special.
+
+Likewise the mean similarity between A and B in the regions where B matches the
+key is the same as the overall mean similarity.
+
+Since those are both the same (on average)-- 65% in this example-- the mean of
+both of them should also be 65%.
+
+The mean of two means is also the same as the mean of all of the components of
+those two means if you aggregated them all together. Suppose I make a list of
+the regions where A matches the key, and another list of the regions where B
+matches it. If I sum up everything in those two lists and divide by the total
+length, I should get the same result: 65%.
+
+But what's actually in those two lists? They have an intersection: the places
+where the key matches *both* A and B. In these places A and B have 100%
+similarity (they must be the same if they both match the key) so undercounting
+these regions would deflate the mean similarity.
+
+The places where A and B both match the key appear in that aggregated list
+twice each. So if I'm averaging similarities in regions where A or B matches
+the key, I need to count the regions where they both match twice, or I will end
+up with a mean similarity that is consistently too low. That's what was
+happening.
+
+There is a similar pattern to this as in the well-known rule that if you want
+to know the probability of two events X and Y, you need to remember to subtract
+the probability of both of them, so you don't double-count it. P(X or Y) = P(X)
++ P(Y) - P(X and Y). Only in our case we were half-counting rather than
+double-counting! END.
